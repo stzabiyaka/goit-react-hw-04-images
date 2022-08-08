@@ -7,7 +7,7 @@ export const ImageGalleryItem = ({ imageUrl, largeImageUrl, tags, author }) => {
   const [showModal, setShowModal] = useState(false);
 
   const toggleModal = () => {
-    setShowModal(state => !state);
+    setShowModal(show => !show);
   };
 
   const imageAlt = `${tags}. Author: ${author}`;

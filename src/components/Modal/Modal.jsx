@@ -7,6 +7,11 @@ const modalRoot = document.querySelector('#modal-root');
 
 export const Modal = ({ imageUrl, imageAlt, onClose }) => {
   useEffect(() => {
+    const handleKeyDown = event => {
+      if (event.code === 'Escape') {
+        onClose();
+      }
+    };
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
@@ -14,15 +19,9 @@ export const Modal = ({ imageUrl, imageAlt, onClose }) => {
     };
   }, []);
 
-  const handleKeyDown = event => {
-    if (event.code === 'Escape') {
-      this.props.onClose();
-    }
-  };
-
   const handleBackdropClick = event => {
     if (event.target !== event.currentTarget) {
-      this.props.onClose();
+      onClose();
     }
   };
 
