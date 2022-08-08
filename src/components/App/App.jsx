@@ -18,6 +18,7 @@ export const App = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [showLoader, setShowLoader] = useState(false);
   const isSearchQueryUpdated = useRef(false);
+  const isLoadMoreButtonVisible = page !== totalPages && !showLoader;
 
   useEffect(() => {
     if (!searchQuery) {
@@ -45,7 +46,7 @@ export const App = () => {
           setTotalPages(Math.ceil(result.totalHits / PER_PAGE));
           isSearchQueryUpdated.current = false;
         }
-        const hits = result.hits.map(element => {
+        const newImages = result.hits.map(element => {
           return {
             id: element.id,
             webformatURL: element.webformatURL,
@@ -54,7 +55,7 @@ export const App = () => {
             largeImageURL: element.largeImageURL,
           };
         });
-        setImages(state => [...state, ...hits]);
+        setImages(prevImages => [...prevImages, ...newImages]);
       })
       .catch(({ message }) => {
         toast.error(`Error occured ${message}`);
@@ -77,7 +78,7 @@ export const App = () => {
 
   const loadMoreImages = () => {
     if (page < totalPages) {
-      setPage(state => state + 1);
+      setPage(prevPage => prevPage + 1);
     }
   };
 
@@ -95,7 +96,7 @@ export const App = () => {
           ariaLabel="three-circles-rotating"
         />
       )}
-      {images.length !== 0 && page !== totalPages && (
+      {isLoadMoreButtonVisible && (
         <Button onClick={loadMoreImages} disabled={showLoader} />
       )}
       <ToastContainer autoClose={3000} theme="colored" />
