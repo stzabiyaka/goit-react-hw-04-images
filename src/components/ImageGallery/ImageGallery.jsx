@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { ImageGalleryItem } from 'components/ImageGalleryItem';
 import { ImageGalleryContainer } from '.';
 
-export function ImageGallery({ images }) {
+export const ImageGallery = ({ images }) => {
   return (
     <ImageGalleryContainer>
       {images.length !== 0 &&
@@ -19,7 +19,7 @@ export function ImageGallery({ images }) {
         })}
     </ImageGalleryContainer>
   );
-}
+};
 
 ImageGallery.propTypes = {
   images: PropTypes.arrayOf(

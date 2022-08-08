@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import { Application } from 'components/App';
 import { Searchbar } from 'components/Searchbar';
@@ -17,12 +17,14 @@ export const App = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showLoader, setShowLoader] = useState(false);
+  const isSearchQueryUpdated = useRef(false);
 
   useEffect(() => {
     if (!searchQuery) {
       return;
     }
     setShowLoader(true);
+
     imagesApi
       .fetchImagesBundle({
         query: searchQuery,
@@ -36,8 +38,13 @@ export const App = () => {
           );
           return;
         }
-        setTotalPages(Math.ceil(result.totalHits / PER_PAGE));
-        toast.info(`Hooray, we have found ${result.totalHits} images for you.`);
+        if (isSearchQueryUpdated.current) {
+          toast.info(
+            `Hooray, we have found ${result.totalHits} images for you.`
+          );
+          setTotalPages(Math.ceil(result.totalHits / PER_PAGE));
+          isSearchQueryUpdated.current = false;
+        }
         const hits = result.hits.map(element => {
           return {
             id: element.id,
@@ -50,60 +57,12 @@ export const App = () => {
         setImages(state => [...state, ...hits]);
       })
       .catch(({ message }) => {
-        toast.error(`Error occured: ${message}`);
+        toast.error(`Error occured ${message}`);
       })
-      .finally(setShowLoader(false));
-
-    // if (isSearchQueryUpdated) {
-
-    // }
+      .finally(() => {
+        setShowLoader(false);
+      });
   }, [searchQuery, page]);
-
-  // async componentDidUpdate(prevProps, prevState) {
-  //   const isSearchQueryUpdated =
-  //     prevState.searchQuery !== this.state.searchQuery;
-  //   const isPageUpdated = prevState.page !== this.state.page;
-
-  //   if (isSearchQueryUpdated || isPageUpdated) {
-  //     this.setState({ showLoader: true });
-  //     try {
-  //       const result = await imagesApi.fetchImagesBundle({
-  //         query: this.state.searchQuery,
-  //         page: this.state.page,
-  //         perPage: PER_PAGE,
-  //       });
-  //       if (result.totalHits === 0) {
-  //         toast.warning(
-  //           'Sorry, there are no images, corresponding to your request.'
-  //         );
-  //         return;
-  //       }
-  //       if (isSearchQueryUpdated) {
-  //         toast.info(
-  //           `Hooray, we have found ${result.totalHits} images for you.`
-  //         );
-  //         this.setState({ totalPages: Math.ceil(result.totalHits / PER_PAGE) });
-  //       }
-  //       const hits = result.hits.map(element => {
-  //         return {
-  //           id: element.id,
-  //           webformatURL: element.webformatURL,
-  //           tags: element.tags,
-  //           user: element.user,
-  //           largeImageURL: element.largeImageURL,
-  //         };
-  //       });
-  //       this.setState(prevState => ({
-  //         images: [...prevState.images, ...hits],
-  //       }));
-  //     } catch (error) {
-  //       this.setState({ error: error.message });
-  //       toast.error(`Error occured ${this.state.error}`);
-  //     } finally {
-  //       this.setState({ showLoader: false });
-  //     }
-  //   }
-  // }
 
   const changeSearchQuery = query => {
     if (searchQuery === query) {
@@ -113,6 +72,7 @@ export const App = () => {
     setImages([]);
     setPage(1);
     setTotalPages(1);
+    isSearchQueryUpdated.current = true;
   };
 
   const loadMoreImages = () => {
@@ -124,7 +84,7 @@ export const App = () => {
   return (
     <Application>
       <Searchbar onSubmit={changeSearchQuery} />
-      {searchQuery && <ImageGallery images={images} />}
+      {images.length !== 0 && <ImageGallery images={images} />}
       {showLoader && (
         <ThreeCircles
           height="100"
